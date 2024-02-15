@@ -1,82 +1,92 @@
-"use client";
+"use client"
+import { signIn } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect } from "react";
-import {useRouter} from "next/navigation";
-import axios from "axios";
-import { toast } from "react-hot-toast";
+import { useState } from "react";
 
+type RegisterPageProps = {};
 
-export default function SignupPage() {
-    const router = useRouter();
-    const [user, setUser] = React.useState({
-        email: "",
-        password: "",
-        username: "",
-    })
-    const [buttonDisabled, setButtonDisabled] = React.useState(false);
-    const [loading, setLoading] = React.useState(false);
+export default function RegisterPage({}: RegisterPageProps): JSX.Element {
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [creatingUser, setCreatingUser] = useState<boolean>(false);
+  const [userCreated, setUserCreated] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
 
-    const onSignup = async () => {
-        try {
-            setLoading(true);
-            const response = await axios.post("/api/signup", user);
-            console.log("Signup success", response.data);
-            router.push("/login");
-            
-        } catch (error:any) {
-            console.log("Signup failed", error.message);
-            
-            toast.error(error.message);
-        }finally {
-            setLoading(false);
-        }
+  async function handleFormSubmit(ev: React.FormEvent<HTMLFormElement>) {
+    ev.preventDefault();
+    setCreatingUser(true);
+    setError(false);
+    setUserCreated(false);
+    const response = await fetch('/api/register', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (response.ok) {
+      setUserCreated(true);
+    } else {
+      setError(true);
     }
+    setCreatingUser(false);
+  }
 
-    useEffect(() => {
-        if(user.email.length > 0 && user.password.length > 0 && user.username.length > 0) {
-            setButtonDisabled(false);
-        } else {
-            setButtonDisabled(true);
-        }
-    }, [user]);
-
-
-    return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
-        <h1>{loading ? "Processing" : "Signup"}</h1>
-        <hr />
-        <label htmlFor="username">username</label>
-        <input 
-        className="p-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:border-gray-600 text-black"
-            id="username"
-            type="text"
-            value={user.username}
-            onChange={(e) => setUser({...user, username: e.target.value})}
-            placeholder="username"
-            />
-        <label htmlFor="email">email</label>
-        <input 
-        className="p-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:border-gray-600 text-black"
-            id="email"
-            type="text"
-            value={user.email}
-            onChange={(e) => setUser({...user, email: e.target.value})}
-            placeholder="email"
-            />
-        <label htmlFor="password">password</label>
-        <input 
-        className="p-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:border-gray-600 text-black"
-            id="password"
-            type="password"
-            value={user.password}
-            onChange={(e) => setUser({...user, password: e.target.value})}
-            placeholder="password"
-            />
-            <button
-            onClick={onSignup}
-            className="p-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:border-gray-600">{buttonDisabled ? "No signup" : "Signup"}</button>
-            <Link href="/login">Visit login page</Link>
+  return (
+    <section className="mt-8">
+      <h1 className="text-center text-primary text-4xl mb-4">
+        Register
+      </h1>
+      {userCreated && (
+        <div className="my-4 text-center">
+          User created.<br />
+          Now you can{' '}
+          <Link href={'/login'}>
+            <span className="underline cursor-pointer">Login &raquo;</span>
+          </Link>
         </div>
-    )
-
+      )}
+      {error && (
+        <div className="my-4 text-center">
+          An error has occurred.<br />
+          Please try again later
+        </div>
+      )}
+      <form className="block max-w-xs mx-auto" onSubmit={handleFormSubmit}>
+        <input
+          type="email"
+          placeholder="email"
+          value={email}
+          disabled={creatingUser}
+          onChange={(ev) => setEmail(ev.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="password"
+          value={password}
+          disabled={creatingUser}
+          onChange={(ev) => setPassword(ev.target.value)}
+        />
+        <button type="submit" disabled={creatingUser}>
+          Register
+        </button>
+        <div className="my-4 text-center text-gray-500">
+          or login with provider
+        </div>
+        <button
+          onClick={() => signIn('google', { callbackUrl: '/' })}
+          className="flex gap-4 justify-center"
+        >
+          <Image src={'/google.png'} alt={''} width={24} height={24} />
+          Login with google
+        </button>
+        <div className="text-center my-4 text-gray-500 border-t pt-4">
+          Existing account?{' '}
+          <Link href={'/login'}>
+            <span className="underline cursor-pointer">Login here &raquo;</span>
+          </Link>
+        </div>
+      </form>
+    </section>
+  );
 }

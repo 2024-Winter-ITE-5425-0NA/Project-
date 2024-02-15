@@ -1,20 +1,16 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { MongoDBAdapter } from '@auth/mongodb-adapter';
+import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import { UserInfo } from '@/models/UserInfo';
 import { User } from '@/models/User';
-import NextAuth, { GetServerSideProps, NextAuthOptions, getSession } from 'next-auth';
+import NextAuth, { NextAuthOptions } from 'next-auth';
+import {getServerSession} from "next-auth";
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-import clientPromise from '@/libs/mongoConnect';
+import clientPromise from '@/lib/database';
 
-type Credentials = {
-  email: string;
-  password: string;
-};
-
-const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
   secret: process.env.SECRET!,
   adapter: MongoDBAdapter(clientPromise),
   providers: [
@@ -23,13 +19,16 @@ const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
     CredentialsProvider({
-      name: 'Credentials',
+      name: 'credentials',
       id: 'credentials',
       credentials: {
         username: { label: 'Email', type: 'email', placeholder: 'test@example.com' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials: Credentials) {
+      async authorize(credentials: Record<string, string> | undefined, req) {
+        if (!credentials || !credentials.email || !credentials.password) {
+          return null; // Returning null if credentials are missing or incomplete
+        }
         const { email, password } = credentials;
 
         await mongoose.connect(process.env.MONGO_URL!);
@@ -46,25 +45,18 @@ const authOptions: NextAuthOptions = {
   ],
 };
 
-export const isAdmin: GetServerSideProps<boolean> = async (context) => {
-  const session = await getServerSession(context);
+export async function isAdmin() {
+  const session = await getServerSession(authOptions);
   const userEmail = session?.user?.email;
   if (!userEmail) {
     return false;
   }
-  const userInfo = await UserInfo.findOne({ email: userEmail });
+  const userInfo = await UserInfo.findOne({email:userEmail});
   if (!userInfo) {
     return false;
   }
   return userInfo.admin;
-};
+} 
 
-const handler = NextAuth<NextApiRequest, NextApiResponse>(authOptions);
-
-export default handler;
-
-async function getServerSession(context: { req: NextApiRequest }) {
-  // Retrieve the session from the request context
-  const session = await getSession(context);
-  return session;
-}
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST }

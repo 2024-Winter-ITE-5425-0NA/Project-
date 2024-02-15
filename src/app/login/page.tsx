@@ -1,72 +1,69 @@
-"use client";
-import Link from "next/link";
-import React, {useEffect} from "react";
-import {useRouter} from "next/navigation";
-import axios from "axios";
-import { toast } from "react-hot-toast";
+"use client"
+import { FC, useState, ChangeEvent, FormEvent } from "react";
+import { signIn } from "next-auth/react";
+import Image from "next/image";
 
+interface LoginPageProps {}
 
-export default function LoginPage() {
-    const router = useRouter();
-    const [user, setUser] = React.useState({
-        email: "",
-        password: "",
-       
-    })
-    const [buttonDisabled, setButtonDisabled] = React.useState(false);
-    const [loading, setLoading] = React.useState(false);
+const LoginPage: FC<LoginPageProps> = () => {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [loginInProgress, setLoginInProgress] = useState<boolean>(false);
 
-    const onLogin = async () => {
-        try {
-            setLoading(true);
-            const response = await axios.post("/api/login", user);
-            console.log("Login success", response.data);
-            toast.success("Login success");
-            router.push("/");
-        } catch (error:any) {
-            console.log("Login failed", error.message);
-            toast.error(error.message);
-        } finally{
-        setLoading(false);
-        }
-    }
+  const handleFormSubmit = async (ev: FormEvent<HTMLFormElement>) => {
+    ev.preventDefault();
+    setLoginInProgress(true);
 
-    useEffect(() => {
-        if(user.email.length > 0 && user.password.length > 0) {
-            setButtonDisabled(false);
-        } else{
-            setButtonDisabled(true);
-        }
-    }, [user]);
+    await signIn("credentials", { email, password, callbackUrl: "/" });
 
-    return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
-        <h1>{loading ? "Processing" : "Login"}</h1>
-        <hr />
-        
-        <label htmlFor="email">email</label>
-        <input 
-        className="p-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:border-gray-600 text-black"
-            id="email"
-            type="text"
-            value={user.email}
-            onChange={(e) => setUser({...user, email: e.target.value})}
-            placeholder="email"
-            />
-        <label htmlFor="password">password</label>
-        <input 
-        className="p-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:border-gray-600 text-black"
-            id="password"
-            type="password"
-            value={user.password}
-            onChange={(e) => setUser({...user, password: e.target.value})}
-            placeholder="password"
-            />
-            <button
-            onClick={onLogin}
-            className="p-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:border-gray-600">Login here</button>
-            <Link href="/signup">Visit Signup page</Link>
+    setLoginInProgress(false);
+  };
+
+  const handleEmailChange = (ev: ChangeEvent<HTMLInputElement>) => {
+    setEmail(ev.target.value);
+  };
+
+  const handlePasswordChange = (ev: ChangeEvent<HTMLInputElement>) => {
+    setPassword(ev.target.value);
+  };
+
+  return (
+    <section className="mt-8">
+      <h1 className="text-center text-primary text-4xl mb-4">Login</h1>
+      <form className="max-w-xs mx-auto" onSubmit={handleFormSubmit}>
+        <input
+          type="email"
+          name="email"
+          placeholder="email"
+          value={email}
+          disabled={loginInProgress}
+          onChange={handleEmailChange}
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="password"
+          value={password}
+          disabled={loginInProgress}
+          onChange={handlePasswordChange}
+        />
+        <button disabled={loginInProgress} type="submit">
+          Login
+        </button>
+        <div className="my-4 text-center text-gray-500">
+          or login with provider
         </div>
-    )
+        <button
+          type="button"
+          onClick={() => signIn("google", { callbackUrl: "/" })}
+          className="flex gap-4 justify-center"
+        >
+          <Image src={"/google.png"} alt={""} width={24} height={24} />
+          Login with google
+        </button>
+      </form>
+    </section>
+  );
+};
 
-}
+export default LoginPage;

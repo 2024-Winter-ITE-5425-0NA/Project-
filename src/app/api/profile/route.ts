@@ -4,6 +4,7 @@ import { User } from "@/models/User";
 import { UserInfo } from "@/models/UserInfo";
 import mongoose from "mongoose";
 import { getServerSession } from "next-auth";
+import { IUser } from '@/types/types';
 
 export async function PUT(req: NextRequest, res: NextResponse) {
   await mongoose.connect(process.env.MONGO_URL!);
@@ -52,7 +53,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
     filterUser = { email };
   }
 
-  const user = await User.findOne(filterUser).lean();
+  const user = await User.findOne(filterUser).lean() as IUser;
   if (!user) {
     return NextResponse.json({ error: 'User not found' });
   }
@@ -60,4 +61,5 @@ export async function GET(req: NextRequest, res: NextResponse) {
   const userInfo = await UserInfo.findOne({ email: user.email }).lean();
 
   return NextResponse.json({ ...user, ...userInfo });
+  
 }

@@ -1,15 +1,29 @@
-import mongoose from 'mongoose';
+import { MongoClient } from "mongodb";
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://n01547224:saeed123@cluster0.jhwzocs.mongodb.net/projectWeb2?retryWrites=true&w=majority';
-
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+if (!process.env.MONGO_URL) {
+  throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
 
-async function dbConnect() {
-  if (mongoose.connection.readyState >= 1) return;
+const uri = process.env.MONGO_URL;
+const options = {};
 
-  return mongoose.connect(MONGODB_URI);
+let client: MongoClient;
+let clientPromise: Promise<MongoClient>; // Explicitly type clientPromise as a Promise of MongoClient
+
+if (process.env.NODE_ENV === "development") {
+  // In development mode, use a global variable so that the value
+  // is preserved across module reloads caused by HMR (Hot Module Replacement).
+  if (!global._mongoClientPromise) {
+    client = new MongoClient(uri, options);
+    global._mongoClientPromise = client.connect();
+  }
+  clientPromise = global._mongoClientPromise as Promise<MongoClient>; // Cast to the correct type
+} else {
+  // In production mode, it's best to not use a global variable.
+  client = new MongoClient(uri, options);
+  clientPromise = client.connect();
 }
 
-export default dbConnect;
+// Export a module-scoped MongoClient promise. By doing this in a
+// separate module, the client can be shared across functions.
+export default clientPromise;

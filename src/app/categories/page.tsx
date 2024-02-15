@@ -1,3 +1,4 @@
+"use client"
 import DeleteButton from "@/components/DeleteButton";
 import UserTabs from "@/components/layout/UserTab";
 import { useEffect, useState } from "react";
