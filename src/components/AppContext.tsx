@@ -1,4 +1,4 @@
-'use client'
+"use client"
 import { SessionProvider } from "next-auth/react";
 import { createContext, useEffect, useState, ReactNode } from "react";
 import toast from "react-hot-toast";
