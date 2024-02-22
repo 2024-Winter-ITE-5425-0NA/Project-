@@ -22,11 +22,11 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const email = credentials?.email; // Change credentials?.email to credentials?.username
+        const email = credentials?.email;
         const password = credentials?.password!;
 
         mongoose.connect(process.env.MONGO_URL);
-        const user = await User.findOne({ email }); // Corrected to use email instead of undefined variable
+        const user = await User.findOne({ email });
         const passwordOk = user && bcrypt.compareSync(password, user.password);
 
         if (passwordOk) {
@@ -50,7 +50,7 @@ export const authOptions = {
       return token;
     },
     async session({ session, token }: { session: any; token: JWT }) {
-      // Send properties to the client, like an access_token and user id from a provider.
+      // Sending properties to the client, like an access_token and user id from a provider.
       session.accessToken = token.accessToken;
       session.user.id = token.id;
 
