@@ -4,7 +4,8 @@ import InfoBox from "@/components/layout/InfoBox";
 import SuccessBox from "@/components/layout/SuccessBox";
 import UserForm from "@/components/layout/UserForm";
 import UserTabs from "@/components/layout/UserTab";
-import { useSession } from "next-auth/react";
+import { Session } from "next-auth";
+import { getSession, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -25,7 +26,20 @@ type UserType = {
 }
 
 export default function ProfilePage() {
-  const { data: session, status } = useSession();
+  const { data: sessions, status } = useSession();
+  const session1 = getSession();
+
+  const [session, setSession] = useState<Session | null>(null);
+
+  useEffect(() => {
+    async function fetchSession() {
+      const session = await getSession();
+      console.log("Saeed"+session);
+      setSession(session);
+      console.log("Saeed"+session);// corrected from session1 to session
+    }
+    fetchSession();
+  }, [session]);
 
   const [user, setUser] = useState<UserType | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);

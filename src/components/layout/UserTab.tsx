@@ -1,4 +1,3 @@
-'use client'
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,24 +10,24 @@ const UserTabs: React.FC<UserTabsProps> = ({ isAdmin }) => {
 
   return (
     <div className="flex mx-auto gap-2 tabs justify-center flex-wrap">
-      <Link href={'/profile'} passHref>
-        <a className={path === '/profile' ? 'active' : ''}>Profile</a>
+      <Link href="/profile" passHref>
+        <span className={path === '/profile' ? 'active' : ''}>Profile</span>
       </Link>
       {isAdmin && (
         <>
-          <Link href={'/categories'} passHref>
-            <a className={path === '/categories' ? 'active' : ''}>Categories</a>
+          <Link href="/categories" passHref>
+            <span className={path === '/categories' ? 'active' : ''}>Categories</span>
           </Link>
-          <Link href={'/menu-items'} passHref>
-            <a className={path.includes('menu-items') ? 'active' : ''}>Menu Items</a>
+          <Link href="/menu-items" passHref>
+            <span className={path.includes('menu-items') ? 'active' : ''}>Menu Items</span>
           </Link>
-          <Link href={'/users'} passHref>
-            <a className={path.includes('/users') ? 'active' : ''}>Users</a>
+          <Link href="/users" passHref>
+            <span className={path.includes('/users') ? 'active' : ''}>Users</span>
           </Link>
         </>
       )}
-      <Link href={'/orders'} passHref>
-        <a className={path === '/orders' ? 'active' : ''}>Orders</a>
+      <Link href="/orders" passHref>
+        <span className={path === '/orders' ? 'active' : ''}>Orders</span>
       </Link>
     </div>
   );

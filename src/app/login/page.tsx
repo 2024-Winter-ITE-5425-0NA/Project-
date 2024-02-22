@@ -1,6 +1,6 @@
 "use client"
 import { FC, useState, ChangeEvent, FormEvent } from "react";
-import { signIn } from "next-auth/react";
+import { SignInResponse, signIn } from "next-auth/react";
 import Image from "next/image";
 
 interface LoginPageProps {}
@@ -9,14 +9,27 @@ const LoginPage: FC<LoginPageProps> = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loginInProgress, setLoginInProgress] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   const handleFormSubmit = async (ev: FormEvent<HTMLFormElement>) => {
-    ev.preventDefault();
+    ev. preventDefault();
     setLoginInProgress(true);
+    setErrorMessage("");
 
-    await signIn("credentials", { email, password, callbackUrl: "/" });
+    const result: SignInResponse = await signIn("credentials", {
+      redirect: false, // Prevents redirect and returns a promise
+      email, 
+      password,
+    }) as SignInResponse; // Cast the response to the SignInResponse type
 
-    setLoginInProgress(false);
+    if (result.error) {
+      setErrorMessage(result.error);
+    } else if (result.url) {
+      window.location.href = '/';
+    } else {
+      // Handle other cases or set a default error message
+      setErrorMessage("An unknown error occurred.");
+    }
   };
 
   const handleEmailChange = (ev: ChangeEvent<HTMLInputElement>) => {

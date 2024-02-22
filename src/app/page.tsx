@@ -4,9 +4,10 @@ import HomeMenu from "@/components/layout/HomeMenu";
 import SectionHeaders from "@/components/layout/SectionHeaders";
 import { authOptions } from "./api/auth/[...nextauth]/route";
 import { getServerSession } from "next-auth";
+import { getSession } from "next-auth/react";
 
 export default async function Home() {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   return (
     <>
       <div>
