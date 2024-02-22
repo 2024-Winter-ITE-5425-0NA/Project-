@@ -29,17 +29,17 @@ export default function ProfilePage() {
   const { data: sessions, status } = useSession();
   const session1 = getSession();
 
-  const [session, setSession] = useState<Session | null>(null);
+  // const [session, setSession] = useState<Session | null>(null);
 
-  useEffect(() => {
-    async function fetchSession() {
-      const session = await getSession();
-      console.log("Saeed"+session);
-      setSession(session);
-      console.log("Saeed"+session);// corrected from session1 to session
-    }
-    fetchSession();
-  }, [session]);
+  // useEffect(() => {
+  //   async function fetchSession() {
+  //     const session = await getSession();
+  //     console.log("Saeed"+session);
+  //     setSession(session);
+  //     console.log("Saeed"+session);// corrected from session1 to session
+  //   }
+  //   fetchSession();
+  // }, [session]);
 
   const [user, setUser] = useState<UserType | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
